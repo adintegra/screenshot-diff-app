@@ -15,16 +15,20 @@ docker build \
     --build-arg SMTP_USER="${SMTP_USER}" \
     --build-arg SMTP_PASS="${SMTP_PASS}" \
     --build-arg SMTP_FROM="${SMTP_FROM}" \
-    --build-arg SMTP_TO="${SMTP_TO}" \
+    --build-arg SMTP_SECURE="${SMTP_SECURE}" \
     --build-arg NEXT_PUBLIC_BASE_URL="${NEXT_PUBLIC_BASE_URL}" \
     --build-arg CRON_SECRET="${CRON_SECRET}" \
+    --build-arg SCREENSHOT_URLS="${SCREENSHOT_URLS}" \
+    --build-arg CHANGE_THRESHOLD="${CHANGE_THRESHOLD}" \
+    --build-arg NOTIFICATION_EMAIL="${NOTIFICATION_EMAIL}" \
+    --build-arg SCREENSHOT_RETENTION_DAYS="${SCREENSHOT_RETENTION_DAYS}" \
     -t screenshot-diff-app .
 
 # Check if build was successful
 if [ $? -eq 0 ]; then
     echo "Docker image built successfully!"
     echo "You can run the container using:"
-    echo "docker run -p 3000:3000 -v \$(pwd)/screenshots:/app/screenshots screenshot-diff-app"
+    echo "docker run -p 3000:3000 -v \$(pwd)/screenshots:/app/public screenshot-diff-app"
 else
     echo "Docker build failed!"
 fi

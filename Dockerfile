@@ -38,6 +38,10 @@ ARG SMTP_FROM
 ARG SMTP_TO
 ARG NEXT_PUBLIC_BASE_URL
 ARG CRON_SECRET
+ARG SCREENSHOT_URLS
+ARG CHANGE_THRESHOLD
+ARG NOTIFICATION_EMAIL
+ARG SCREENSHOT_RETENTION_DAYS
 
 # Set environment variables from build arguments
 ENV SMTP_HOST=$SMTP_HOST
@@ -48,15 +52,16 @@ ENV SMTP_FROM=$SMTP_FROM
 ENV SMTP_TO=$SMTP_TO
 ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
 ENV CRON_SECRET=$CRON_SECRET
+ENV SCREENSHOT_URLS=$SCREENSHOT_URLS
+ENV CHANGE_THRESHOLD=$CHANGE_THRESHOLD
+ENV NOTIFICATION_EMAIL=$NOTIFICATION_EMAIL
+ENV SCREENSHOT_RETENTION_DAYS=$SCREENSHOT_RETENTION_DAYS
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
-
-# Install Playwright browsers
-RUN npx playwright install chromium
 
 # Copy the rest of the application
 COPY . .
@@ -66,6 +71,9 @@ RUN chown -R node:node /app
 
 # Switch to non-root user
 USER node
+
+# Install Playwright browser (align version with package.json)
+RUN npx -y playwright@1.52.0 install chromium
 
 # Build the Next.js application
 RUN npm run build
