@@ -1,7 +1,6 @@
 import { Page } from 'playwright';
-import { writeFile } from 'fs/promises';
+import { writeFile, readdir, unlink } from 'fs/promises';
 import path from 'path';
-import { readdir } from 'fs/promises';
 
 export async function takeFullPageScreenshot(page: Page) {
   // Wait for the page to be fully loaded
@@ -93,4 +92,30 @@ export async function findMostRecentScreenshot(url: string): Promise<string | nu
   }
 
   return urlScreenshots.length > 0 ? urlScreenshots[0] : null;
+}
+
+export async function cleanupOldScreenshots(retentionDays: number = 7): Promise<void> {
+  const screenshotsDir = path.join(process.cwd(), 'public');
+  const files = await readdir(screenshotsDir);
+
+  const now = new Date();
+  const retentionDate = new Date(now.getTime() - (retentionDays * 24 * 60 * 60 * 1000));
+
+  for (const file of files) {
+    if (file.startsWith('screenshot-') && file.endsWith('.png')) {
+      try {
+        // Extract timestamp from filename (format: screenshot-YYYY-MM-DD-HH-mm-ss-url.png)
+        const timestampStr = file.split('-').slice(1, 7).join('-');
+        const fileDate = new Date(timestampStr.replace(/-/g, ':'));
+
+        if (fileDate < retentionDate) {
+          const filePath = path.join(screenshotsDir, file);
+          await unlink(filePath);
+          console.log(`Deleted old screenshot: ${file}`);
+        }
+      } catch (error) {
+        console.error(`Error processing file ${file}:`, error);
+      }
+    }
+  }
 }

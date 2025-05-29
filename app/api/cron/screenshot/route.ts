@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { chromium } from 'playwright';
-import { takeFullPageScreenshot, generateFilename, saveScreenshot, findMostRecentScreenshot } from '@/app/lib/screenshot';
+import { takeFullPageScreenshot, generateFilename, saveScreenshot, findMostRecentScreenshot, cleanupOldScreenshots } from '@/app/lib/screenshot';
 import { createVisualDiff, generateDiffFilename } from '@/app/lib/diff';
 import { sendChangeNotification } from '@/app/lib/email';
 
@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic';
 
 // Get change threshold from environment variable, default to 10 if not set
 const CHANGE_THRESHOLD = parseFloat(process.env.CHANGE_THRESHOLD || '10');
+// Get retention days from environment variable, default to 7 if not set
+const RETENTION_DAYS = parseInt(process.env.SCREENSHOT_RETENTION_DAYS || '7');
 
 export async function GET(request: Request) {
   // Check for manual test secret key
@@ -33,6 +35,10 @@ export async function GET(request: Request) {
   const results = [];
 
   try {
+    // Clean up old screenshots first
+    console.log(`Cleaning up screenshots older than ${RETENTION_DAYS} days...`);
+    await cleanupOldScreenshots(RETENTION_DAYS);
+
     // Get URLs from environment variables
     const urls = process.env.SCREENSHOT_URLS?.split(',') || [];
     if (urls.length === 0) {
