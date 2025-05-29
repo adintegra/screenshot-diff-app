@@ -30,4 +30,5 @@ out
 Thumbs.db
 
 # Screenshots directory
-public/*.png
+/public/screenshot-*.png
+/public/diff-*.png
